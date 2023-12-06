@@ -22,10 +22,22 @@ const initializeDBAndServer = async () => {
   }
 };
 initializeDBAndServer();
+const convertDbObjectToResponseObject = (dbObject) => {
+  return {
+    playerId: dbObject.player_id,
+    playerName: dbObject.player_name,
+    jerseyNumber: dbObject.jersey_number,
+    role: dbObject.role,
+  };
+};
 app.get("/players/", async (request, response) => {
   const getPlayersQuery = `select * from cricket_team order by player_id;`;
   const playersArray = await db.all(getPlayersQuery);
-  response.send(playersArray);
+  response.send(
+    playersArray.map((eachPlayer) =>
+      convertDbObjectToResponseObject(eachPlayer)
+    )
+  );
 });
 
 app.post("/players/", async (request, response) => {
@@ -47,7 +59,7 @@ app.get("/players/:playerId", async (request, response) => {
   const { playerId } = request.params;
   const getPlayerQuery = `select * from cricket_team where player_id= ${playerId};`;
   const playerArray = await db.get(getPlayerQuery);
-  response.send(playerArray);
+  response.send(convertDbObjectToResponseObject(playerArray));
 });
 app.put("/players/:playerId/", async (request, response) => {
   const { playerId } = request.params;
